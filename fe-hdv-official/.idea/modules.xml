@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/../fe-hdv-official.iml" filepath="$PROJECT_DIR$/../fe-hdv-official.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/fe-hdv-official.iml" filepath="$PROJECT_DIR$/.idea/fe-hdv-official.iml" />
     </modules>
   </component>
 </project>
