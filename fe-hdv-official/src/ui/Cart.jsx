@@ -3,6 +3,7 @@ import {useEffect, useState} from "react";
 import {InventoryService} from "../service/inventoryService";
 import {Mappers} from "../service/mapper";
 import {CheckoutService} from "../service/checkoutService";
+import {VnAdmin} from "../service/vnAdmin";
 
 const Cart = () => {
     return (
@@ -22,6 +23,9 @@ const Cart = () => {
 const LeftPane = () => {
     const [shipments, setShipments] = useState([])
     const [payments, setPayments] = useState([])
+    const [cities, setCities] = useState([])
+    const [districts, setDistricts] = useState([])
+    const [wards, setWards] = useState([])
 
     useEffect(() => {
         const j1 = async () => {
@@ -29,11 +33,37 @@ const LeftPane = () => {
             setPayments(resp.map(Mappers.mapPaymentDtoToPayment));
         }
         const j = async () => {
-           const resp = await CheckoutService.getShipment();
-           setShipments(resp.map(Mappers.mapShipmentDtoToShipment));
+            const resp = await CheckoutService.getShipment();
+            setShipments(resp.map(Mappers.mapShipmentDtoToShipment));
         }
-        j(); j1();
+        j();
+        j1();
     }, [])
+
+    useEffect(() => {
+        const j = async () => {
+            const cities = await VnAdmin.getCities();
+            setCities(cities);
+        }
+        j()
+    }, [])
+
+    const handleCityChange = (cityId) => {
+        const j = async () => {
+            const provinces = await VnAdmin.getDistricts(cityId);
+            setDistricts(provinces)
+            setWards([])
+        }
+        j();
+    }
+
+    const handleDistrictChange = (districtId) => {
+        const j = async () => {
+            const districts = await VnAdmin.getWards(districtId);
+            setWards(districts)
+        }
+        j();
+    }
 
     return (
         <div>
@@ -42,27 +72,33 @@ const LeftPane = () => {
                 <input type="text" placeholder="Địa chỉ" style={{width: "100%"}}/>
                 <div className="row" style={{marginTop: '1vh'}}>
                     <div className="col-lg-4">
-                        <select className="form-select">
+                        <select className="form-select" onChange={(e) => handleCityChange(e.target.value)}>
                             <option value="0">Chọn tỉnh thành</option>
-                            <option value="1">A</option>
-                            <option value="2">B</option>
-                            <option value="3">C</option>
+                            {
+                                cities.map((city, _) => (
+                                    <option value={city.id}>{city.name}</option>
+                                ))
+                            }
                         </select>
                     </div>
                     <div className="col-lg-4">
-                        <select className="form-select">
+                        <select className="form-select" onChange={(e) => handleDistrictChange(e.target.value)}>
                             <option value="0">Chọn quận huyện</option>
-                            <option value="1">A</option>
-                            <option value="2">B</option>
-                            <option value="3">C</option>
+                            {
+                                districts.map((district, _) => (
+                                    <option value={district.id}>{district.name}</option>
+                                ))
+                            }
                         </select>
                     </div>
                     <div className="col-lg-4">
                         <select className="form-select">
                             <option value="0">Chọn phường xã</option>
-                            <option value="1">A</option>
-                            <option value="2">B</option>
-                            <option value="3">C</option>
+                            {
+                                wards.map((ward, _) => (
+                                    <option value={ward.id}>{ward.name}</option>
+                                ))
+                            }
                         </select>
                     </div>
                 </div>
@@ -111,7 +147,7 @@ const RightPane = () => {
     useEffect(() => {
         const j = async () => {
             const products = await InventoryService.getProducts();
-            setProduct(products.slice(0,5).map(Mappers.mapItemDtoToItem));
+            setProduct(products.slice(0, 5).map(Mappers.mapItemDtoToItem));
         };
         j();
     }, []);
@@ -144,7 +180,7 @@ const RightPane = () => {
                 </div>
             </div>
             <div style={{width: '100%', background: 'black', height: '1px'}}></div>
-            <a className="btn btn-primary">Đặt hàng</a>
+            <btn className="btn btn-primary">Đặt hàng</btn>
         </div>
     )
 }

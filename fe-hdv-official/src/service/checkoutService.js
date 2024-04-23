@@ -2,8 +2,10 @@ import axios from "axios";
 
 const BASE_URL = "http://localhost:8090/api/v1";
 const cache = {};
+const DISABLE_FLAG = true;
 export const CheckoutService = {
     getPayments: async () => {
+        if (DISABLE_FLAG) return []
         if (cache['payments']) {
             return cache['payments']
         }
@@ -21,6 +23,7 @@ export const CheckoutService = {
         }
     },
     getShipment: async () => {
+        if (DISABLE_FLAG) return []
         if (cache['shipment']) {
             return cache['shipment']
         }
