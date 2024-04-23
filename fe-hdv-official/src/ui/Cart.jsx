@@ -1,5 +1,8 @@
 import 'bootstrap/dist/css/bootstrap.min.css'
-import {useState} from "react";
+import {useEffect, useState} from "react";
+import {InventoryService} from "../service/inventoryService";
+import {Mappers} from "../service/mapper";
+import {CheckoutService} from "../service/checkoutService";
 
 const Cart = () => {
     return (
@@ -17,6 +20,21 @@ const Cart = () => {
 }
 
 const LeftPane = () => {
+    const [shipments, setShipments] = useState([])
+    const [payments, setPayments] = useState([])
+
+    useEffect(() => {
+        const j1 = async () => {
+            const resp = await CheckoutService.getPayments();
+            setPayments(resp.map(Mappers.mapPaymentDtoToPayment));
+        }
+        const j = async () => {
+           const resp = await CheckoutService.getShipment();
+           setShipments(resp.map(Mappers.mapShipmentDtoToShipment));
+        }
+        j(); j1();
+    }, [])
+
     return (
         <div>
             <div id="address-choose">
@@ -51,42 +69,53 @@ const LeftPane = () => {
             </div>
             <div id="shipment">
                 <h3>Shipment Method:</h3>
-                <div className="row">
-                    <input type="radio" className="col-lg-1" value="express" name="shipment"/>
-                    <img src="https://hstatic.net/0/0/global/design/seller/image/payment/other.svg?v=6" alt="smaidw"
-                         style={{height: "100%", width: "auto"}} className="col-lg-3"/>
-                    <p className="col-lg-6">Giao hàng tận nơi</p>
-                    <p className="col-lg-2">10000đ</p>
-                </div>
+                {
+                    shipments.map((shipment, _) => (
+                        <div className="row">
+                            <input type="radio" className="col-lg-1" name="shipment"/>
+                            <img src="https://hstatic.net/0/0/global/design/seller/image/payment/other.svg?v=6"
+                                 alt="smaidw"
+                                 style={{height: "100%", width: "auto"}} className="col-lg-3"/>
+                            <p className="col-lg-6">{shipment.title}</p>
+                            <p className="col-lg-2">{shipment.cost} đ</p>
+                        </div>
+                    ))
+                }
             </div>
             <div id="payment" style={{height: "2vh"}}>
                 <h3>Payment Method:</h3>
-                <div className="row">
-                    <input type="radio" className="col-lg-1" value="bank" name="payment"/>
-                    <img src="https://hstatic.net/0/0/global/design/seller/image/payment/other.svg?v=6" alt="smaidw"
-                         style={{height: "100%", width: "auto"}} className="col-lg-3"/>
-                    <p className="col-lg-8">Transfer through bank account</p>
-                </div>
-                <div className="row">
-                    <input type="radio" className="col-lg-1" value="cod" name="payment"/>
-                    <img src="https://hstatic.net/0/0/global/design/seller/image/payment/cod.svg?v=6/image/payment/other.svg?v=6" alt="smaidw"
-                         style={{height: "100%", width: "auto"}} className="col-lg-3"/>
-                    <p className="col-lg-8">Cash On Delivery</p>
-                </div>
+                {
+                    payments.map((payment, _) => (
+                        <div className="row">
+                            <input type="radio" className="col-lg-1" name="payment"/>
+                            <img src="https://hstatic.net/0/0/global/design/seller/image/payment/other.svg?v=6"
+                                 alt="smaidw"
+                                 style={{height: "100%", width: "auto"}} className="col-lg-3"/>
+                            <p className="col-lg-8">{payment.title}</p>
+                        </div>
+                    ))
+                }
             </div>
         </div>
     )
 }
 
 const RightPane = () => {
-    const fakeImg = "https://img-s-msn-com.akamaized.net/tenant/amp/entityid/AA1nqjtY.img?w=768&h=402&m=6&x=120&y=120&s=280&d=280"
-    const item = {
-        image: fakeImg,
-        title: "Đồ nội địa Nhật",
-        description: "Mô tả sản phẩm",
-        price: "100000đ"
-    }
-    const [products, setProduct] = useState(Array.from({length: 5}, () => item))
+    const [products, setProduct] = useState([])
+    const [totalPrice, setTotalPrice] = useState(0)
+
+    useEffect(() => {
+        setTotalPrice(products.reduce((acc, item) => acc + item.price, 0));
+    }, [products])
+
+    useEffect(() => {
+        const j = async () => {
+            const products = await InventoryService.getProducts();
+            setProduct(products.slice(0,5).map(Mappers.mapItemDtoToItem));
+        };
+        j();
+    }, []);
+
     return (
         <div>
             <div>
@@ -100,7 +129,7 @@ const RightPane = () => {
             <div>
                 <div className="row">
                     <div className="col-lg-8">Tạm tính</div>
-                    <div className="col-lg-4">100000đ</div>
+                    <div className="col-lg-4">{totalPrice} đ</div>
                 </div>
                 <div className="row">
                     <div className="col-lg-8">Phí vận chuyển</div>
@@ -131,7 +160,7 @@ const ProductItem = ({item}) => {
                 <div>{item.description}</div>
             </div>
             <div className="col-lg-3">
-                <div>{item.price}</div>
+                <div>{item.price} đ</div>
             </div>
         </div>
     )
