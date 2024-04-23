@@ -1,6 +1,9 @@
 import axios from "axios";
 
-const InvoiceService = {
+const BASE_URL = "http://localhost:8090/api/v1";
+const cache = {};
+
+export const InvoiceService = {
     createInvoice: async (customer, payment, shipment, products, totalPrice) => {
         const invoiceProducts = products.map((item, _) => {
             return {
@@ -12,14 +15,17 @@ const InvoiceService = {
             }
         })
         const invoiceDto = {
-            invoiceId: undefined,
             customer: customer,
-            payment: payment,
-            shipment: shipment,
-            products: [],
-            invoiceProducts: invoiceProducts,
-            totalPrice: totalPrice,
-            time: new Date().toISOString()
+            invoice: {
+                invoiceId: undefined,
+                customer: customer,
+                payment: payment,
+                shipment: shipment,
+                invoiceProducts: invoiceProducts,
+                totalAmount: products.length,
+                totalPrice: totalPrice,
+                time: new Date().toISOString()
+            }
         }
         try {
             const response = await axios.post(`${BASE_URL}/create`, invoiceDto)

@@ -4,23 +4,45 @@ import {InventoryService} from "../service/inventoryService";
 import {Mappers} from "../service/mapper";
 import {CheckoutService} from "../service/checkoutService";
 import {VnAdmin} from "../service/vnAdmin";
+import {InvoiceService} from "../service/invoiceService";
 
 const Cart = () => {
+    const [selectedShipment, setSelectedShipment] = useState(null)
+    const [selectedPayment, setSelectedPayment] = useState(null)
+
+    const handleMakeOrderClick = () => {
+        const j = async () => {
+           const resp = await InvoiceService.createInvoice(
+               undefined,
+               selectedPayment,
+               selectedShipment,
+               undefined,
+               undefined,
+           )
+            // router.navigate("/success")
+        }
+        j()
+    }
+
     return (
         <div className="container">
             <div className="row">
                 <div className="col-lg-8">
-                    <LeftPane/>
+                    <LeftPane
+                        onSelectPayment={setSelectedPayment} onSelectShipment={setSelectedShipment}
+                    />
                 </div>
                 <div className="col-lg-4">
-                    <RightPane/>
+                    <RightPane
+                        onMakeOrderClick={handleMakeOrderClick}
+                    />
                 </div>
             </div>
         </div>
     );
 }
 
-const LeftPane = () => {
+const LeftPane = ({onSelectShipment, onSelectPayment}) => {
     const [shipments, setShipments] = useState([])
     const [payments, setPayments] = useState([])
     const [cities, setCities] = useState([])
@@ -108,7 +130,8 @@ const LeftPane = () => {
                 {
                     shipments.map((shipment, _) => (
                         <div className="row">
-                            <input type="radio" className="col-lg-1" name="shipment"/>
+                            <input type="radio" className="col-lg-1" name="shipment"
+                                   onChange={(e) => onSelectShipment(shipment._body)}/>
                             <img src="https://hstatic.net/0/0/global/design/seller/image/payment/other.svg?v=6"
                                  alt="smaidw"
                                  style={{height: "100%", width: "auto"}} className="col-lg-3"/>
@@ -123,7 +146,8 @@ const LeftPane = () => {
                 {
                     payments.map((payment, _) => (
                         <div className="row">
-                            <input type="radio" className="col-lg-1" name="payment"/>
+                            <input type="radio" className="col-lg-1" name="payment"
+                                onChange={(e) => onSelectPayment(payment._body)}/>
                             <img src="https://hstatic.net/0/0/global/design/seller/image/payment/other.svg?v=6"
                                  alt="smaidw"
                                  style={{height: "100%", width: "auto"}} className="col-lg-3"/>
@@ -136,7 +160,7 @@ const LeftPane = () => {
     )
 }
 
-const RightPane = () => {
+const RightPane = ({onMakeOrderClick}) => {
     const [products, setProduct] = useState([])
     const [totalPrice, setTotalPrice] = useState(0)
 
@@ -180,7 +204,7 @@ const RightPane = () => {
                 </div>
             </div>
             <div style={{width: '100%', background: 'black', height: '1px'}}></div>
-            <btn className="btn btn-primary">Đặt hàng</btn>
+            <div className="btn btn-primary" onClick={onMakeOrderClick}>Đặt hàng</div>
         </div>
     )
 }

@@ -1,11 +1,11 @@
 import axios from "axios";
+import {AppConfig} from "../configs/AppConfig";
 
 const BASE_URL = "http://localhost:8088/api/v1/discovery";
 const cache = {};
-const DISABLE_FLAG = true;
 export const InventoryService = {
     getProducts: async () => {
-        if (DISABLE_FLAG) return []
+        if (AppConfig.DISABLE_SERVICES) return []
         if (cache['products']) {
             return cache['products']
         }
