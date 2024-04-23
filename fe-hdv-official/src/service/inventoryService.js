@@ -1,7 +1,7 @@
 import axios from "axios";
 import {AppConfig} from "../configs/AppConfig";
 
-const BASE_URL = "http://localhost:8088/api/v1/discovery";
+const BASE_URL = AppConfig.INVENTORY_SERVICE_URL;
 const cache = {};
 export const InventoryService = {
     getProducts: async () => {

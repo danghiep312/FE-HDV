@@ -5,21 +5,33 @@ import {Mappers} from "../service/mapper";
 import {CheckoutService} from "../service/checkoutService";
 import {VnAdmin} from "../service/vnAdmin";
 import {InvoiceService} from "../service/invoiceService";
+import {UserService} from "../service/userService";
+import {router} from "../App";
 
 const Cart = () => {
-    const [selectedShipment, setSelectedShipment] = useState(null)
+    const [selectedShipment, setSelectedShipment] = useState({'shipmentCost' : 0})
     const [selectedPayment, setSelectedPayment] = useState(null)
+    const [products, setProduct] = useState([])
+
+    useEffect(() => {
+        const j = async () => {
+            const products = await InventoryService.getProducts();
+            setProduct(products.slice(0, 5).map(Mappers.mapItemDtoToItem));
+        };
+        j();
+    }, [])
 
     const handleMakeOrderClick = () => {
         const j = async () => {
            const resp = await InvoiceService.createInvoice(
-               undefined,
+               await UserService.getUser(),
                selectedPayment,
                selectedShipment,
-               undefined,
-               undefined,
+               products,
+               100,
            )
-            // router.navigate("/success")
+            console.log(resp);
+            router.navigate("/success")
         }
         j()
     }
@@ -34,7 +46,9 @@ const Cart = () => {
                 </div>
                 <div className="col-lg-4">
                     <RightPane
+                        shipmentPrice={selectedShipment['shipmentCost']}
                         onMakeOrderClick={handleMakeOrderClick}
+                        products={products}
                     />
                 </div>
             </div>
@@ -71,6 +85,7 @@ const LeftPane = ({onSelectShipment, onSelectPayment}) => {
     }, [])
 
     const handleCityChange = (cityId) => {
+        if (cityId == 0) return
         const j = async () => {
             const provinces = await VnAdmin.getDistricts(cityId);
             setDistricts(provinces)
@@ -80,6 +95,7 @@ const LeftPane = ({onSelectShipment, onSelectPayment}) => {
     }
 
     const handleDistrictChange = (districtId) => {
+        if (districtId == 0) return
         const j = async () => {
             const districts = await VnAdmin.getWards(districtId);
             setWards(districts)
@@ -91,7 +107,8 @@ const LeftPane = ({onSelectShipment, onSelectPayment}) => {
         <div>
             <div id="address-choose">
                 <h3>Địa chỉ giao hàng:</h3>
-                <input type="text" placeholder="Địa chỉ" style={{width: "100%"}}/>
+                <input type="text" className="form-control w-100" placeholder="Địa chỉ"/>
+                <input type="text" className="form-control w-100 mt-2" placeholder="Email"/>
                 <div className="row" style={{marginTop: '1vh'}}>
                     <div className="col-lg-4">
                         <select className="form-select" onChange={(e) => handleCityChange(e.target.value)}>
@@ -160,21 +177,12 @@ const LeftPane = ({onSelectShipment, onSelectPayment}) => {
     )
 }
 
-const RightPane = ({onMakeOrderClick}) => {
-    const [products, setProduct] = useState([])
+const RightPane = ({products, shipmentPrice, onMakeOrderClick}) => {
     const [totalPrice, setTotalPrice] = useState(0)
 
     useEffect(() => {
         setTotalPrice(products.reduce((acc, item) => acc + item.price, 0));
-    }, [products])
-
-    useEffect(() => {
-        const j = async () => {
-            const products = await InventoryService.getProducts();
-            setProduct(products.slice(0, 5).map(Mappers.mapItemDtoToItem));
-        };
-        j();
-    }, []);
+    }, [products]);
 
     return (
         <div>
@@ -193,14 +201,14 @@ const RightPane = ({onMakeOrderClick}) => {
                 </div>
                 <div className="row">
                     <div className="col-lg-8">Phí vận chuyển</div>
-                    <div className="col-lg-4">---</div>
+                    <div className="col-lg-4">{shipmentPrice} đ</div>
                 </div>
             </div>
             <div style={{width: '100%', background: 'black', height: '1px'}}></div>
             <div>
                 <div className="row">
                     <div className="col-lg-8">Tổng cộng</div>
-                    <div className="col-lg-4"><span>VND</span>1,374,000đ</div>
+                    <div className="col-lg-4"><span>VND</span>{totalPrice + shipmentPrice} đ</div>
                 </div>
             </div>
             <div style={{width: '100%', background: 'black', height: '1px'}}></div>

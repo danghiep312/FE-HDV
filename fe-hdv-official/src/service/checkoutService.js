@@ -1,7 +1,7 @@
 import axios from "axios";
 import {AppConfig} from "../configs/AppConfig";
 
-const BASE_URL = "http://localhost:8090/api/v1";
+const BASE_URL = AppConfig.CHECKOUT_SERVICE_URL;
 const cache = {};
 
 export const CheckoutService = {

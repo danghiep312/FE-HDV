@@ -1,13 +1,14 @@
 import axios from "axios";
+import {AppConfig} from "../configs/AppConfig";
 
-const BASE_URL = "http://localhost:8090/api/v1";
+const BASE_URL = AppConfig.INVOICE_SERVICE_URL;
 const cache = {};
 
 export const InvoiceService = {
     createInvoice: async (customer, payment, shipment, products, totalPrice) => {
         const invoiceProducts = products.map((item, _) => {
             return {
-                amount: item.amount,
+                amount: 1,
                 id: {
                     invoiceId: undefined,
                     productId: item.productId
@@ -22,6 +23,7 @@ export const InvoiceService = {
                 payment: payment,
                 shipment: shipment,
                 invoiceProducts: invoiceProducts,
+                products: [],
                 totalAmount: products.length,
                 totalPrice: totalPrice,
                 time: new Date().toISOString()
