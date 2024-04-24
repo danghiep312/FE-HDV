@@ -1,4 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap/dist/css/bootstrap-utilities.min.css'
 import {useEffect, useState} from "react";
 import {Mappers} from "../service/mapper";
 import {CheckoutService} from "../service/checkoutService";
@@ -37,14 +38,16 @@ const Cart = () => {
     }
 
     return (
-        <div className="container">
+        <div className="container-fluid">
             <div className="row">
-                <div className="col-lg-8">
+                <div className="col-lg-7">
                     <LeftPane
                         onSelectPayment={setSelectedPayment} onSelectShipment={setSelectedShipment}
+                        currentShipment={selectedShipment}
+                        currentPayment={selectedPayment}
                     />
                 </div>
-                <div className="col-lg-4">
+                <div className="col-lg-5">
                     <RightPane
                         shipmentPrice={selectedShipment['shipmentCost']}
                         onMakeOrderClick={handleMakeOrderClick}
@@ -56,7 +59,7 @@ const Cart = () => {
     );
 }
 
-const LeftPane = ({onSelectShipment, onSelectPayment}) => {
+const LeftPane = ({onSelectShipment, onSelectPayment, currentPayment, currentShipment}) => {
     const [shipments, setShipments] = useState([])
     const [payments, setPayments] = useState([])
     const [cities, setCities] = useState([])
@@ -77,6 +80,15 @@ const LeftPane = ({onSelectShipment, onSelectPayment}) => {
     }, [])
 
     useEffect(() => {
+        if (payments.length) {
+            onSelectPayment(payments[0]._body)
+        }
+        if (shipments.length) {
+            onSelectShipment(shipments[0]._body)
+        }
+    }, [payments, shipments]);
+
+    useEffect(() => {
         const j = async () => {
             const cities = await VnAdmin.getCities();
             setCities(cities);
@@ -85,7 +97,7 @@ const LeftPane = ({onSelectShipment, onSelectPayment}) => {
     }, [])
 
     const handleCityChange = (cityId) => {
-        if (cityId == 0) return
+        if (cityId === '0') return
         const j = async () => {
             const provinces = await VnAdmin.getDistricts(cityId);
             setDistricts(provinces)
@@ -95,7 +107,7 @@ const LeftPane = ({onSelectShipment, onSelectPayment}) => {
     }
 
     const handleDistrictChange = (districtId) => {
-        if (districtId == 0) return
+        if (districtId === '0') return
         const j = async () => {
             const districts = await VnAdmin.getWards(districtId);
             setWards(districts)
@@ -104,9 +116,9 @@ const LeftPane = ({onSelectShipment, onSelectPayment}) => {
     }
 
     return (
-        <div>
+        <div className="ms-5 mt-3">
             <div id="address-choose">
-                <h3>Địa chỉ giao hàng:</h3>
+                <h3>Thông tin giao hàng:</h3>
                 <input type="text" className="form-control w-100" placeholder="Địa chỉ"/>
                 <input type="text" className="form-control w-100 mt-2" placeholder="Email"/>
                 <div className="row" style={{marginTop: '1vh'}}>
@@ -142,33 +154,42 @@ const LeftPane = ({onSelectShipment, onSelectPayment}) => {
                     </div>
                 </div>
             </div>
-            <div id="shipment">
+            <div id="shipment" className="mt-3">
                 <h3>Shipment Method:</h3>
                 {
                     shipments.map((shipment, _) => (
-                        <div className="row">
-                            <input type="radio" className="col-lg-1" name="shipment"
-                                   onChange={(e) => onSelectShipment(shipment._body)}/>
+                        <div className="row d-flex align-items-lg-center"
+                             style={ {background: shipment._body === currentShipment ? '#f5f5f5' : 'white'} }
+                        onClick={() => onSelectShipment(shipment._body)}>
+                            <div className="col-lg-1">
+                                <input type="radio" name="shipment"
+                                       checked={shipment._body === currentShipment}/>
+                            </div>
                             <img src="https://hstatic.net/0/0/global/design/seller/image/payment/other.svg?v=6"
                                  alt="smaidw"
                                  style={{height: "100%", width: "auto"}} className="col-lg-3"/>
-                            <p className="col-lg-6">{shipment.title}</p>
-                            <p className="col-lg-2">{shipment.cost} đ</p>
+                            <div className="col-lg-6">{shipment.title}</div>
+                            <div className="col-lg-2">{shipment.cost} đ</div>
                         </div>
                     ))
                 }
             </div>
-            <div id="payment" style={{height: "2vh"}}>
+            <div id="payment" className="mt-3">
                 <h3>Payment Method:</h3>
                 {
                     payments.map((payment, _) => (
-                        <div className="row">
-                            <input type="radio" className="col-lg-1" name="payment"
-                                onChange={(e) => onSelectPayment(payment._body)}/>
+                        <div className="row d-flex align-items-lg-center"
+                             style={ {background: payment._body === currentPayment ? '#f5f5f5' : 'white'} }
+                        onClick={() => onSelectPayment(payment._body)}>
+                            <div className="col-lg-1">
+                                <input type="radio" name="payment"
+                                       checked={payment._body === currentPayment}/>
+                            </div>
+
                             <img src="https://hstatic.net/0/0/global/design/seller/image/payment/other.svg?v=6"
                                  alt="smaidw"
                                  style={{height: "100%", width: "auto"}} className="col-lg-3"/>
-                            <p className="col-lg-8">{payment.title}</p>
+                            <div className="col-lg-8">{payment.title}</div>
                         </div>
                     ))
                 }
@@ -185,11 +206,13 @@ const RightPane = ({products, shipmentPrice, onMakeOrderClick}) => {
     }, [products]);
 
     return (
-        <div>
+        <div className="row-gap-4 d-flex flex-column" style={{background: '#f8f8f8', height: '100vh', padding: '2vh 10vh 0vh 8vh'}}>
             <div>
                 {
                     products.map((item, _) =>
-                        <ProductItem item={item}/>
+                        <div className="mt-3">
+                            <ProductItem item={item}/>
+                        </div>
                     )
                 }
             </div>
@@ -212,20 +235,20 @@ const RightPane = ({products, shipmentPrice, onMakeOrderClick}) => {
                 </div>
             </div>
             <div style={{width: '100%', background: 'black', height: '1px'}}></div>
-            <div className="btn btn-primary" onClick={onMakeOrderClick}>Đặt hàng</div>
+            <div className="btn btn-primary mx-auto" style={{display: 'block'}} onClick={onMakeOrderClick}>Đặt hàng</div>
         </div>
     )
 }
 
 const ProductItem = ({item}) => {
     return (
-        <div className="row">
-            <div className="col-lg-3">
+        <div className="row" style={{ display: 'flex', alignItems: 'center' }}>
+            <div className="col-lg-2">
                 <img alt="bruh" src={item.image} style={{width: '100%', height: 'auto'}}/>
             </div>
-            <div className="col-lg-6" style={{display: "flex", flexDirection: "column"}}>
+            <div className="col-lg-7" style={{display: "flex", flexDirection: "column"}}>
                 <div>{item.title}</div>
-                <div>{item.description}</div>
+                <div style={{color: 'gray', fontSize: '0.9rem'}}>{item.description}</div>
             </div>
             <div className="col-lg-3">
                 <div>{item.price} đ</div>
