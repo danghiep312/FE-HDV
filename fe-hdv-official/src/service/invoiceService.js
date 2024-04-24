@@ -37,5 +37,18 @@ export const InvoiceService = {
             console.error('Error creating invoice: ', e)
             throw e
         }
+    },
+    findInvoice: async (invoiceId) => {
+        if (cache[`invoice-${invoiceId}`]) {
+            return cache[invoiceId]
+        }
+        try {
+            const response = await axios.get(`${AppConfig.INVOICE_SERVICE_URL}/invoice/get-invoice`, {params: {invoiceId: invoiceId}});
+            cache[`invoice-${invoiceId}`] = response.data
+            return response.data
+        } catch (e) {
+            console.error('Error finding invoice: ', e)
+            throw e
+        }
     }
 }
