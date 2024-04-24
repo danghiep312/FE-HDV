@@ -1,7 +1,6 @@
 import axios from "axios";
 import {AppConfig} from "../configs/AppConfig";
 
-const BASE_URL = AppConfig.CHECKOUT_SERVICE_URL;
 const cache = {};
 
 export const CheckoutService = {
@@ -16,7 +15,7 @@ export const CheckoutService = {
     },
     forceGetPayments: async () => {
         try {
-            const resp = await axios.get(`${BASE_URL}/payment/all`)
+            const resp = await axios.get(`${AppConfig.PAYMENT_SERVICE_URL}/payment/all`)
             return resp.data
         } catch (e) {
             console.error('Error fetching payments: ', e)
@@ -34,7 +33,7 @@ export const CheckoutService = {
     },
     forceGetShipment: async () => {
         try {
-            const resp = await axios.get(`${BASE_URL}/shipment/all`)
+            const resp = await axios.get(`${AppConfig.SHIPMENT_SERVICE_URL}/shipment/all`)
             return resp.data
         } catch (e) {
             console.error('Error fetching shipment: ', e)

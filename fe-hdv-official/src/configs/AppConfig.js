@@ -1,6 +1,8 @@
 export const AppConfig = {
     DISABLE_SERVICES: false,
-    CHECKOUT_SERVICE_URL: 'http://localhost:8090/api/v1',
-    INVENTORY_SERVICE_URL: 'http://localhost:8088/api/v1/discovery',
-    INVOICE_SERVICE_URL: 'http://localhost:8090/api/v1/invoice',
+    PAYMENT_SERVICE_URL: 'http://localhost:8004',
+    SHIPMENT_SERVICE_URL: 'http://localhost:8005',
+    INVENTORY_SERVICE_URL: 'http://localhost:8000/discovery',
+    INVOICE_SERVICE_URL: 'http://localhost:8007',
+    CART_SERVICE_URL: 'http://localhost:8002',
 }

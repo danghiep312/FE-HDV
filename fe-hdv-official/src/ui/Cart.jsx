@@ -1,12 +1,12 @@
 import 'bootstrap/dist/css/bootstrap.min.css'
 import {useEffect, useState} from "react";
-import {InventoryService} from "../service/inventoryService";
 import {Mappers} from "../service/mapper";
 import {CheckoutService} from "../service/checkoutService";
 import {VnAdmin} from "../service/vnAdmin";
 import {InvoiceService} from "../service/invoiceService";
 import {UserService} from "../service/userService";
 import {router} from "../App";
+import {CartService} from "../service/cartService";
 
 const Cart = () => {
     const [selectedShipment, setSelectedShipment] = useState({'shipmentCost' : 0})
@@ -15,8 +15,8 @@ const Cart = () => {
 
     useEffect(() => {
         const j = async () => {
-            const products = await InventoryService.getProducts();
-            setProduct(products.slice(0, 5).map(Mappers.mapItemDtoToItem));
+            const products = await CartService.getCartProducts();
+            setProduct(products.map(Mappers.mapItemDtoToItem));
         };
         j();
     }, [])
@@ -27,7 +27,7 @@ const Cart = () => {
                await UserService.getUser(),
                selectedPayment,
                selectedShipment,
-               products,
+               products['product'],
                100,
            )
             console.log(resp);
@@ -229,6 +229,7 @@ const ProductItem = ({item}) => {
             </div>
             <div className="col-lg-3">
                 <div>{item.price} đ</div>
+                <div>x{item.amount}</div>
             </div>
         </div>
     )

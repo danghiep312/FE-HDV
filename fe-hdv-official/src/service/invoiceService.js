@@ -30,7 +30,7 @@ export const InvoiceService = {
             }
         }
         try {
-            const response = await axios.post(`${BASE_URL}/create`, invoiceDto)
+            const response = await axios.post(`${BASE_URL}/checkout/checkout`, invoiceDto)
             return response.data
         } catch (e) {
             console.error('Error creating invoice: ', e)

@@ -1,10 +1,11 @@
 const mapItemDtoToItem = (itemDto, _) => {
     return {
         productId: itemDto['productId'],
-        image: itemDto['imageUrl'],
-        title: itemDto['name'],
-        description: itemDto['description'],
-        price: itemDto['price']
+        image: itemDto['product']['imageUrl'],
+        title: itemDto['product']['name'],
+        description: itemDto['product']['description'],
+        price: itemDto['product']['price'],
+        amount: itemDto['amount']
     }
 }
 

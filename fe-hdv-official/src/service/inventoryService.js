@@ -3,7 +3,7 @@ import {AppConfig} from "../configs/AppConfig";
 
 const BASE_URL = AppConfig.INVENTORY_SERVICE_URL;
 const cache = {};
-export const InventoryService = {
+const InventoryService = {
     getProducts: async () => {
         if (AppConfig.DISABLE_SERVICES) return []
         if (cache['products']) {

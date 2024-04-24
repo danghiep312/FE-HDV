@@ -7,5 +7,6 @@ export const UserService = {
             "name": "h",
             "phone": "093425"
         }
-    }
+    },
+    getUserId: "customer4"
 }
