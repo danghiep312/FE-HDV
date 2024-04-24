@@ -1,6 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/css/bootstrap-utilities.min.css'
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {Mappers} from "../service/mapper";
 import {CheckoutService} from "../service/checkoutService";
 import {VnAdmin} from "../service/vnAdmin";
@@ -13,6 +13,7 @@ const Cart = () => {
     const [selectedShipment, setSelectedShipment] = useState({'shipmentCost' : 0})
     const [selectedPayment, setSelectedPayment] = useState(null)
     const [products, setProduct] = useState([])
+    const address = useRef('')
 
     useEffect(() => {
         const j = async () => {
@@ -28,8 +29,9 @@ const Cart = () => {
                await UserService.getUser(),
                selectedPayment,
                selectedShipment,
-               products['product'],
+               products,
                100,
+               address.current
            )
             console.log(resp);
             router.navigate("/success")
@@ -45,6 +47,7 @@ const Cart = () => {
                         onSelectPayment={setSelectedPayment} onSelectShipment={setSelectedShipment}
                         currentShipment={selectedShipment}
                         currentPayment={selectedPayment}
+                        onAddressChange={(addr) => address.current = addr}
                     />
                 </div>
                 <div className="col-lg-5">
@@ -59,12 +62,13 @@ const Cart = () => {
     );
 }
 
-const LeftPane = ({onSelectShipment, onSelectPayment, currentPayment, currentShipment}) => {
+const LeftPane = ({onSelectShipment, onSelectPayment, currentPayment, currentShipment, onAddressChange}) => {
     const [shipments, setShipments] = useState([])
     const [payments, setPayments] = useState([])
     const [cities, setCities] = useState([])
     const [districts, setDistricts] = useState([])
     const [wards, setWards] = useState([])
+    const [finalAddress, setFinalAddress] = useState([])
 
     useEffect(() => {
         const j1 = async () => {
@@ -96,10 +100,16 @@ const LeftPane = ({onSelectShipment, onSelectPayment, currentPayment, currentShi
         j()
     }, [])
 
+    useEffect(() => {
+        onAddressChange(`${finalAddress[2]}, ${finalAddress[1]}, ${finalAddress[0]}`)
+    }, [finalAddress])
+
     const handleCityChange = (cityId) => {
         if (cityId === '0') return
         const j = async () => {
             const provinces = await VnAdmin.getDistricts(cityId);
+            finalAddress[0] = cities.filter(city => city.id === cityId)[0].name
+            setFinalAddress(finalAddress)
             setDistricts(provinces)
             setWards([])
         }
@@ -110,7 +120,18 @@ const LeftPane = ({onSelectShipment, onSelectPayment, currentPayment, currentShi
         if (districtId === '0') return
         const j = async () => {
             const districts = await VnAdmin.getWards(districtId);
+            finalAddress[1] = districts.filter(district => district.id === districtId)[0].name
+            setFinalAddress(finalAddress)
             setWards(districts)
+        }
+        j();
+    }
+
+    const handleWardChange = (wardId) => {
+        if (wardId === '0') return
+        const j = async () => {
+            finalAddress[2] = wards.filter(ward => ward.id === wardId)[0].name
+            setFinalAddress(finalAddress)
         }
         j();
     }
@@ -143,7 +164,7 @@ const LeftPane = ({onSelectShipment, onSelectPayment, currentPayment, currentShi
                         </select>
                     </div>
                     <div className="col-lg-4">
-                        <select className="form-select">
+                        <select className="form-select" onChange={(e) => handleWardChange(e.target.value)}>
                             <option value="0">Chọn phường xã</option>
                             {
                                 wards.map((ward, _) => (

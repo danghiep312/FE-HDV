@@ -5,13 +5,13 @@ const BASE_URL = AppConfig.INVOICE_SERVICE_URL;
 const cache = {};
 
 export const InvoiceService = {
-    createInvoice: async (customer, payment, shipment, products, totalPrice) => {
+    createInvoice: async (customer, payment, shipment, products, totalPrice, address) => {
         const invoiceProducts = products.map((item, _) => {
             return {
-                amount: 1,
+                amount: item['amount'],
                 id: {
                     invoiceId: undefined,
-                    productId: item.productId
+                    productId: item['productId']
                 }
             }
         })
@@ -21,6 +21,7 @@ export const InvoiceService = {
                 invoiceId: undefined,
                 customer: customer,
                 payment: payment,
+                address: address,
                 shipment: shipment,
                 invoiceProducts: invoiceProducts,
                 products: [],
