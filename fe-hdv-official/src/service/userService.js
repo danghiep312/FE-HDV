@@ -5,7 +5,8 @@ export const UserService = {
             "username": "h",
             "password": "h",
             "name": "h",
-            "phone": "093425"
+            "phone": "093425",
+            "email": "hiepdang0312@gmail.com"
         }
     },
     getUserId: "customer4"
