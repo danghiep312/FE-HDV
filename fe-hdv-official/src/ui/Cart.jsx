@@ -1,19 +1,26 @@
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/css/bootstrap-utilities.min.css'
+import 'bootstrap/dist/js/bootstrap.min'
 import {useEffect, useRef, useState} from "react";
 import {Mappers} from "../service/mapper";
 import {CheckoutService} from "../service/checkoutService";
 import {VnAdmin} from "../service/vnAdmin";
-import {InvoiceService} from "../service/invoiceService";
 import {UserService} from "../service/userService";
 import {router} from "../App";
 import {CartService} from "../service/cartService";
+import {Toast} from "react-bootstrap";
+import {ToastStyle} from "../configs/Style";
+import {wait} from "@testing-library/user-event/dist/utils";
 
 const Cart = () => {
-    const [selectedShipment, setSelectedShipment] = useState({'shipmentCost' : 0})
+    const [selectedShipment, setSelectedShipment] = useState({'shipmentCost': 0})
     const [selectedPayment, setSelectedPayment] = useState(null)
     const [products, setProduct] = useState([])
     const address = useRef('')
+    const [showToast, setShowToast] = useState(false);
+    const [toastTitle, setToastTitle] = useState("");
+    const [toastBody, setToastBody] = useState("");
+    const [toastIsSuccess, setToastIsSuccess] = useState(false);
 
     useEffect(() => {
         const j = async () => {
@@ -25,22 +32,62 @@ const Cart = () => {
 
     const handleMakeOrderClick = () => {
         const j = async () => {
-           const resp = await InvoiceService.createInvoice(
-               await UserService.getUser(),
-               selectedPayment,
-               selectedShipment,
-               products,
-               100,
-               address.current
-           )
-            console.log(resp);
-            router.navigate("/success")
+            try {
+                const invoice = await CheckoutService.checkout(
+                    await UserService.getUser(),
+                    selectedPayment,
+                    selectedShipment,
+                    products,
+                    100,
+                    address.current
+                )
+                toast('Success', `Invoice created`, true)
+                await wait(1500)
+                router.navigate(`/success?invoiceId=${invoice['invoiceId']}`)
+            } catch (e) {
+                const upToDateProducts = e.response.data;
+                toast(`Lỗi: Mặt hàng hiện không đủ số lượng`, 'Chuẩn bị cập nhật...')
+                await wait(1500)
+                updateCartProductAmount(upToDateProducts)
+                toast(`Lỗi: Mặt hàng hiện không đủ số lượng`, 'Cập nhật xong!')
+            }
         }
         j()
     }
 
+    const updateCartProductAmount = (newProducts) => {
+        newProducts.forEach((newProduct) => {
+            const product = products.find((product) => product.productId === newProduct.productId);
+            if (product) {
+                product.amount = newProduct.amount;
+            }
+        })
+        setProduct([...products])
+    }
+
+    function toast(title, body, isSuccess=false)  {
+        // Set the title and body of the toast message
+        setToastTitle(title);
+        setToastBody(body);
+        setToastIsSuccess(isSuccess)
+
+        // Show the toast
+        setShowToast(true);
+    }
+
     return (
         <div className="container-fluid">
+            <div style={ToastStyle}>
+                <Toast onClose={() => setShowToast(false)} show={showToast}
+                       delay={5000} autohide
+                       bg={toastIsSuccess ? 'success' : 'danger'}
+                >
+                    <Toast.Header>
+                        <strong className="me-auto">{toastTitle}</strong>
+                    </Toast.Header>
+                    <Toast.Body className='text-white'>{toastBody}</Toast.Body>
+                </Toast>
+            </div>
             <div className="row">
                 <div className="col-lg-7">
                     <LeftPane
@@ -101,16 +148,17 @@ const LeftPane = ({onSelectShipment, onSelectPayment, currentPayment, currentShi
     }, [])
 
     useEffect(() => {
-        onAddressChange(`${finalAddress[2]}, ${finalAddress[1]}, ${finalAddress[0]}`)
+        const value = `${finalAddress[2]}, ${finalAddress[1]}, ${finalAddress[0]}`;
+        onAddressChange(value)
     }, [finalAddress])
 
     const handleCityChange = (cityId) => {
         if (cityId === '0') return
         const j = async () => {
-            const provinces = await VnAdmin.getDistricts(cityId);
+            const districts = await VnAdmin.getDistricts(cityId);
             finalAddress[0] = cities.filter(city => city.id === cityId)[0].name
-            setFinalAddress(finalAddress)
-            setDistricts(provinces)
+            setFinalAddress([...finalAddress])
+            setDistricts(districts)
             setWards([])
         }
         j();
@@ -119,10 +167,10 @@ const LeftPane = ({onSelectShipment, onSelectPayment, currentPayment, currentShi
     const handleDistrictChange = (districtId) => {
         if (districtId === '0') return
         const j = async () => {
-            const districts = await VnAdmin.getWards(districtId);
+            const wards = await VnAdmin.getWards(districtId);
             finalAddress[1] = districts.filter(district => district.id === districtId)[0].name
-            setFinalAddress(finalAddress)
-            setWards(districts)
+            setFinalAddress([...finalAddress])
+            setWards(wards)
         }
         j();
     }
@@ -131,7 +179,7 @@ const LeftPane = ({onSelectShipment, onSelectPayment, currentPayment, currentShi
         if (wardId === '0') return
         const j = async () => {
             finalAddress[2] = wards.filter(ward => ward.id === wardId)[0].name
-            setFinalAddress(finalAddress)
+            setFinalAddress([...finalAddress])
         }
         j();
     }
@@ -140,7 +188,6 @@ const LeftPane = ({onSelectShipment, onSelectPayment, currentPayment, currentShi
         <div className="ms-5 mt-3">
             <div id="address-choose">
                 <h3>Thông tin giao hàng:</h3>
-                <input type="text" className="form-control w-100" placeholder="Địa chỉ"/>
                 <input type="text" className="form-control w-100 mt-2" placeholder="Email"/>
                 <div className="row" style={{marginTop: '1vh'}}>
                     <div className="col-lg-4">
@@ -174,17 +221,18 @@ const LeftPane = ({onSelectShipment, onSelectPayment, currentPayment, currentShi
                         </select>
                     </div>
                 </div>
+                <input type="text" className="form-control w-100 mt-2" placeholder="Địa chỉ"/>
             </div>
             <div id="shipment" className="mt-3">
                 <h3>Shipment Method:</h3>
                 {
                     shipments.map((shipment, _) => (
                         <div className="row d-flex align-items-lg-center"
-                             style={ {background: shipment._body === currentShipment ? '#f5f5f5' : 'white'} }
-                        onClick={() => onSelectShipment(shipment._body)}>
+                             style={{background: shipment._body === currentShipment ? '#f5f5f5' : 'white'}}
+                             onClick={() => onSelectShipment(shipment._body)}>
                             <div className="col-lg-1">
                                 <input type="radio" name="shipment"
-                                       checked={shipment._body === currentShipment}/>
+                                       checked={shipment._body === currentShipment} readOnly/>
                             </div>
                             <img src="https://hstatic.net/0/0/global/design/seller/image/payment/other.svg?v=6"
                                  alt="smaidw"
@@ -200,11 +248,11 @@ const LeftPane = ({onSelectShipment, onSelectPayment, currentPayment, currentShi
                 {
                     payments.map((payment, _) => (
                         <div className="row d-flex align-items-lg-center"
-                             style={ {background: payment._body === currentPayment ? '#f5f5f5' : 'white'} }
-                        onClick={() => onSelectPayment(payment._body)}>
+                             style={{background: payment._body === currentPayment ? '#f5f5f5' : 'white'}}
+                             onClick={() => onSelectPayment(payment._body)}>
                             <div className="col-lg-1">
                                 <input type="radio" name="payment"
-                                       checked={payment._body === currentPayment}/>
+                                       checked={payment._body === currentPayment} readOnly/>
                             </div>
 
                             <img src="https://hstatic.net/0/0/global/design/seller/image/payment/other.svg?v=6"
@@ -227,7 +275,8 @@ const RightPane = ({products, shipmentPrice, onMakeOrderClick}) => {
     }, [products]);
 
     return (
-        <div className="row-gap-4 d-flex flex-column" style={{background: '#f8f8f8', height: '100vh', padding: '2vh 10vh 0vh 8vh'}}>
+        <div className="row-gap-4 d-flex flex-column"
+             style={{background: '#f8f8f8', height: '100vh', padding: '2vh 10vh 0vh 8vh'}}>
             <div>
                 {
                     products.map((item, _) =>
@@ -256,14 +305,15 @@ const RightPane = ({products, shipmentPrice, onMakeOrderClick}) => {
                 </div>
             </div>
             <div style={{width: '100%', background: 'black', height: '1px'}}></div>
-            <div className="btn btn-primary mx-auto" style={{display: 'block'}} onClick={onMakeOrderClick}>Đặt hàng</div>
+            <div className="btn btn-primary mx-auto" style={{display: 'block'}} onClick={onMakeOrderClick}>Đặt hàng
+            </div>
         </div>
     )
 }
 
 const ProductItem = ({item}) => {
     return (
-        <div className="row" style={{ display: 'flex', alignItems: 'center' }}>
+        <div className="row" style={{display: 'flex', alignItems: 'center'}}>
             <div className="col-lg-2">
                 <img alt="bruh" src={item.image} style={{width: '100%', height: 'auto'}}/>
             </div>

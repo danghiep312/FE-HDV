@@ -4,6 +4,34 @@ import {AppConfig} from "../configs/AppConfig";
 const cache = {};
 
 export const CheckoutService = {
+    checkout: async (customer, payment, shipment, products, totalPrice, address) => {
+        const invoiceProducts = products.map((item, _) => {
+            return {
+                amount: item['amount'],
+                id: {
+                    invoiceId: undefined,
+                    productId: item['productId']
+                }
+            }
+        })
+        const invoiceDto = {
+            customer: customer,
+            invoice: {
+                invoiceId: undefined,
+                customer: customer,
+                payment: payment,
+                address: address,
+                shipment: shipment,
+                invoiceProducts: invoiceProducts,
+                products: [],
+                totalAmount: products.length,
+                totalPrice: totalPrice,
+                time: new Date().toISOString()
+            }
+        }
+        const response = await axios.post(`${AppConfig.CHECKOUT_SERVICE_URL}/checkout/checkout`, invoiceDto);
+        return response.data
+    },
     getPayments: async () => {
         if (AppConfig.DISABLE_SERVICES) return []
         if (cache['payments']) {
