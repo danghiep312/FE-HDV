@@ -43,7 +43,7 @@ const Cart = () => {
                 )
                 toast('Success', `Invoice created`, true)
                 await wait(1500)
-                router.navigate(`/success?invoiceId=${invoice['invoiceId']}`)
+                router.navigate(`/order/${invoice['invoiceId']}`)
             } catch (e) {
                 const upToDateProducts = e.response.data;
                 toast(`Lỗi: Mặt hàng hiện không đủ số lượng`, 'Chuẩn bị cập nhật...')
