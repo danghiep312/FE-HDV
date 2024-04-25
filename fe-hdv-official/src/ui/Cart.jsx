@@ -34,7 +34,7 @@ const Cart = () => {
                address.current
            )
             console.log(resp);
-            router.navigate("/success")
+            // router.navigate("/success")
         }
         j()
     }

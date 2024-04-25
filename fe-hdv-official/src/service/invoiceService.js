@@ -1,7 +1,7 @@
 import axios from "axios";
 import {AppConfig} from "../configs/AppConfig";
 
-const BASE_URL = AppConfig.INVOICE_SERVICE_URL;
+const BASE_URL = AppConfig.CHECKOUT_SERVICE_URL;
 const cache = {};
 
 export const InvoiceService = {
