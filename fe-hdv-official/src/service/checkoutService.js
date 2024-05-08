@@ -1,5 +1,6 @@
 import axios from "axios";
 import {AppConfig} from "../configs/AppConfig";
+import {fetchEventSource} from "@microsoft/fetch-event-source";
 
 const cache = {};
 
@@ -68,4 +69,12 @@ export const CheckoutService = {
             throw e
         }
     },
+    streamCheckoutStatus: async (onNewStatus) => {
+        return await fetchEventSource(`${AppConfig.CHECKOUT_SERVICE_URL}/checkout/checkout-status`, {
+            onmessage: (event) => {
+                const data = JSON.parse(event.data);
+                onNewStatus(data);
+            }
+        })
+    }
 }

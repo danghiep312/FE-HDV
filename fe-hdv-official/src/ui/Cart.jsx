@@ -8,7 +8,7 @@ import {VnAdmin} from "../service/vnAdmin";
 import {UserService} from "../service/userService";
 import {router} from "../App";
 import {CartService} from "../service/cartService";
-import {Toast} from "react-bootstrap";
+import {Modal, Toast} from "react-bootstrap";
 import {ToastStyle} from "../configs/Style";
 import {wait} from "@testing-library/user-event/dist/utils";
 
@@ -21,6 +21,7 @@ const Cart = () => {
     const [toastTitle, setToastTitle] = useState("");
     const [toastBody, setToastBody] = useState("");
     const [toastIsSuccess, setToastIsSuccess] = useState(false);
+    const [showCheckoutStatusDialog, setShowCheckoutStatusDialog] = useState(false);
 
     useEffect(() => {
         const j = async () => {
@@ -326,6 +327,26 @@ const ProductItem = ({item}) => {
                 <div>x{item.amount}</div>
             </div>
         </div>
+    )
+}
+
+const CheckoutStatusDialog = () => {
+    const [statuses, setStatuses] = useState([])
+    useEffect(() => {
+        const j = async () => {
+            return await CheckoutService.streamCheckoutStatus((newData) => {
+                setStatuses([...statuses, newData])
+            })
+        };
+        j().then(
+
+        ).catch(
+
+        )
+    })
+
+    return (
+        <div>TODO</div>
     )
 }
 
