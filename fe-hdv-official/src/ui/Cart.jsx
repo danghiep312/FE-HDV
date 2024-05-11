@@ -1,6 +1,3 @@
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'bootstrap/dist/css/bootstrap-utilities.min.css'
-import 'bootstrap/dist/js/bootstrap.min'
 import {useEffect, useRef, useState} from "react";
 import {Mappers} from "../service/mapper";
 import {CheckoutService} from "../service/checkoutService";
@@ -8,7 +5,7 @@ import {VnAdmin} from "../service/vnAdmin";
 import {UserService} from "../service/userService";
 import {router} from "../App";
 import {CartService} from "../service/cartService";
-import {Modal, Toast} from "react-bootstrap";
+import {Button, ListGroup, ListGroupItem, Modal, Spinner, Toast} from "react-bootstrap";
 import {ToastStyle} from "../configs/Style";
 import {wait} from "@testing-library/user-event/dist/utils";
 
@@ -22,26 +19,43 @@ const Cart = () => {
     const [toastBody, setToastBody] = useState("");
     const [toastIsSuccess, setToastIsSuccess] = useState(false);
     const [showCheckoutStatusDialog, setShowCheckoutStatusDialog] = useState(false);
+    const [backendStatus, setBackendStatus] = useState(-1);
 
     useEffect(() => {
-        const j = async () => {
+        const fetchProducts = async () => {
             const products = await CartService.getCartProducts();
             setProduct(products.map(Mappers.mapItemDtoToItem));
         };
-        j();
-    }, [])
+        fetchProducts();
+    })
 
     const handleMakeOrderClick = () => {
-        const j = async () => {
+        const displayMakeOrderProgress = async () => {
+            setBackendStatus(-1)
+            let count = -1;
             try {
-                const invoice = await CheckoutService.checkout(
+                setShowCheckoutStatusDialog(true);
+                await CheckoutService.streamCheckoutStatus((newStatus) => {
+                    console.log("on new status:" + newStatus);
+                    count++;
+                    setBackendStatus(count);
+                })
+            } catch (e) {
+                toast("Something went wrong", e, false)
+            }
+        };
+        const checkout = async () => {
+            try {
+                let invoice;
+                const checkoutPromise = CheckoutService.checkout(
                     await UserService.getUser(),
                     selectedPayment,
                     selectedShipment,
                     products,
                     100,
                     address.current
-                )
+                ).then((resp) => invoice = resp);
+                await Promise.all([checkoutPromise, displayMakeOrderProgress()]);
                 toast('Success', `Invoice created`, true)
                 await wait(1500)
                 router.navigate(`/order/${invoice['invoiceId']}`)
@@ -53,7 +67,7 @@ const Cart = () => {
                 toast(`Lỗi: Mặt hàng hiện không đủ số lượng`, 'Cập nhật xong!')
             }
         }
-        j()
+        checkout()
     }
 
     const updateCartProductAmount = (newProducts) => {
@@ -75,6 +89,14 @@ const Cart = () => {
         // Show the toast
         setShowToast(true);
     }
+
+    const handleClose = () => {
+        setShowCheckoutStatusDialog(false);
+    };
+
+    const statuses = ["Đang bắt đầu", "Lấy thông tin khách hàng", "Kiểm tra hàng còn bao nhiêu", "Kiểm tra phương thức thanh toán",
+        "Kiểm tra phương thức vận chuyển", "Đã tạo hóa đơn xong!", "Gửi email thông báo"];
+
 
     return (
         <div className="container-fluid">
@@ -106,6 +128,37 @@ const Cart = () => {
                     />
                 </div>
             </div>
+            <Modal show={showCheckoutStatusDialog} onHide={handleClose}>
+                <Modal.Header>
+                    <Modal.Title>Task Status</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <ListGroup>
+                        {
+                            statuses.map((status, index) => (
+                                <ListGroupItem key={index}>
+                                    {backendStatus < index ? (
+                                        <Spinner animation="border" role="status" style={{ width: '20px', height: '20px', color: 'grey' }}>
+                                            <span className="visually-hidden">Loading...</span>
+                                        </Spinner>
+                                    ) : (
+                                        <i className="bi bi-check2" style={{ paddingRight: '4px', fontSize: '16px', color: 'green' }}></i>
+                                    )}
+                                    <span style={{ marginLeft: '10px' }}>{status}</span>
+                                </ListGroupItem>
+                        ))
+                        }
+                    </ListGroup>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleClose}>
+                        Close
+                    </Button>
+                    <Button variant="primary" onClick={handleClose}>
+                        Save Changes
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 }
@@ -327,26 +380,6 @@ const ProductItem = ({item}) => {
                 <div>x{item.amount}</div>
             </div>
         </div>
-    )
-}
-
-const CheckoutStatusDialog = () => {
-    const [statuses, setStatuses] = useState([])
-    useEffect(() => {
-        const j = async () => {
-            return await CheckoutService.streamCheckoutStatus((newData) => {
-                setStatuses([...statuses, newData])
-            })
-        };
-        j().then(
-
-        ).catch(
-
-        )
-    })
-
-    return (
-        <div>TODO</div>
     )
 }
 
