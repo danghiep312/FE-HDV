@@ -27,7 +27,7 @@ const Cart = () => {
             setProduct(products.map(Mappers.mapItemDtoToItem));
         };
         fetchProducts();
-    })
+    }, [])
 
     const handleMakeOrderClick = () => {
         const displayMakeOrderProgress = async () => {
