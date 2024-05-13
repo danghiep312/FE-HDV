@@ -70,7 +70,9 @@ export const CheckoutService = {
         }
     },
     streamCheckoutStatus: async (onNewStatus) => {
-        return await fetchEventSource(`${AppConfig.CHECKOUT_SERVICE_URL}/checkout/checkout-status`, {
+        console.log('stream checkout status')
+
+        return await fetchEventSource(`http://localhost:8007/checkout-status`, {
             onmessage: (event) => {
                 const data = JSON.parse(event.data);
                 onNewStatus(data);

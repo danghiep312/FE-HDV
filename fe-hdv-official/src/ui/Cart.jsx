@@ -5,7 +5,7 @@ import {VnAdmin} from "../service/vnAdmin";
 import {UserService} from "../service/userService";
 import {router} from "../App";
 import {CartService} from "../service/cartService";
-import {Button, ListGroup, ListGroupItem, Modal, Spinner, Toast} from "react-bootstrap";
+import {Button, ListGroup, ListGroupItem, Modal, ProgressBar, Spinner, Toast} from "react-bootstrap";
 import {ToastStyle} from "../configs/Style";
 import {wait} from "@testing-library/user-event/dist/utils";
 
@@ -20,6 +20,7 @@ const Cart = () => {
     const [toastIsSuccess, setToastIsSuccess] = useState(false);
     const [showCheckoutStatusDialog, setShowCheckoutStatusDialog] = useState(false);
     const [backendStatus, setBackendStatus] = useState(-1);
+    const [progress, setProgress] = useState(0);
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -39,6 +40,7 @@ const Cart = () => {
                     console.log("on new status:" + newStatus);
                     count++;
                     setBackendStatus(count);
+                    setProgress((count + 1) * 100 / statuses.length);
                 })
             } catch (e) {
                 toast("Something went wrong", e, false)
@@ -94,7 +96,7 @@ const Cart = () => {
         setShowCheckoutStatusDialog(false);
     };
 
-    const statuses = ["Đang bắt đầu", "Lấy thông tin khách hàng", "Kiểm tra hàng còn bao nhiêu", "Kiểm tra phương thức thanh toán",
+    const statuses = ["Đang bắt đầu", "Lấy thông tin khách hàng", "Kiểm tra hàng còn tồn", "Kiểm tra phương thức thanh toán",
         "Kiểm tra phương thức vận chuyển", "Đã tạo hóa đơn xong!", "Gửi email thông báo"];
 
 
@@ -154,10 +156,9 @@ const Cart = () => {
                     <Button variant="secondary" onClick={handleClose}>
                         Close
                     </Button>
-                    <Button variant="primary" onClick={handleClose}>
-                        Save Changes
-                    </Button>
                 </Modal.Footer>
+
+                <ProgressBar striped variant="success" now={progress} key={1} label={`${progress.toFixed(0)}%`}/>
             </Modal>
         </div>
     );

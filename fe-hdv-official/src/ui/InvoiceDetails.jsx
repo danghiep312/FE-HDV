@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { InvoiceService } from "../service/invoiceService";
 import axios from "axios";
 import { AppConfig } from "../configs/AppConfig";
+import App from "../App";
 
 export const InvoiceDetails = () => {
   const { invoiceId } = useParams();
@@ -20,7 +21,7 @@ export const InvoiceDetails = () => {
 
     // fetchInvoiceDetails();
 
-    fetch("http://localhost:8003/invoice/get-invoice?invoiceId=" + invoiceId)
+    fetch(AppConfig.INVOICE_SERVICE_URL + "/invoice/get-invoice?invoiceId=" + invoiceId)
       .then((response) => response.json())
       .then((data) => {
         setInvoice(data);
