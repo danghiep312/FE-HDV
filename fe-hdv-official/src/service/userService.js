@@ -1,14 +1,13 @@
 export const UserService = {
     getUser: async () => {
         return {
-            customerId: "customer3",
-            "username": "h",
-            "password": "h",
-            "name": "h",
-            "phone": "093425",
-            // "email": "nguyenvquang1611@gmail.com"
-            "email": "danghiep0312@gmail.com"
+            "customerId": "customer1",
+            "username": "hiep",
+            "password": "hiep",
+            "name": "hiep",
+            "phone": "1234",
+            "email": "hiepdang0312@gmail.com"
         }
     },
-    getUserId: "customer4"
+    getUserId: "customer1"
 }
