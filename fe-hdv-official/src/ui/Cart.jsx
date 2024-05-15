@@ -40,6 +40,8 @@ const Cart = () => {
     fetchProducts();
   }, []);
 
+  
+
   const handleMakeOrderClick = () => {
     const displayMakeOrderProgress = async () => {
       setBackendStatus(-1);
@@ -70,7 +72,7 @@ const Cart = () => {
         await Promise.all([checkoutPromise, displayMakeOrderProgress()]);
         toast("Success", `Invoice created`, true);
         await wait(1500);
-        router.navigate(`/order/${invoice["invoiceId"]}`);
+        // router.navigate(`/order/${invoice["invoiceId"]}`);
       } catch (e) {
         const upToDateProducts = e.response.data;
         toast(`Lỗi: Mặt hàng hiện không đủ số lượng`, "Chuẩn bị cập nhật...");
@@ -215,6 +217,12 @@ const LeftPane = ({
   const [wards, setWards] = useState([]);
   const [finalAddress, setFinalAddress] = useState([]);
 
+  const [user, setUser] = useState({});
+
+  const formatMoney = (money) => {
+    return money.toLocaleString('vi-VN', {style : 'currency', currency : 'VND'});
+  }
+
   useEffect(() => {
     const j1 = async () => {
       const resp = await CheckoutService.getPayments();
@@ -226,6 +234,8 @@ const LeftPane = ({
     };
     j();
     j1();
+
+    UserService.getUser().then((user) => setUser(user));
   }, []);
 
   useEffect(() => {
@@ -286,7 +296,7 @@ const LeftPane = ({
 
   return (
     <div className="ms-5 mt-3">
-      <div class="user-info">
+      <div class="user-info" style={{marginBottom: '20px'}}>
         <div class="card">
           <div class="card-body">
             <h5 class="card-title">User Details</h5>
@@ -294,21 +304,21 @@ const LeftPane = ({
               <div class="col-md-6">
                 <ul class="list-group list-group-flush">
                   <li class="list-group-item">
-                    <strong>Customer ID:</strong> <span id="customerId"></span>
+                    <strong>Customer ID:</strong> {user.customerId} <span id="customerId"></span>
                   </li>
                   <li class="list-group-item">
-                    <strong>Phone:</strong>  <span id="phone"></span>
+                    <strong>Phone:</strong> {user.phone} <span id="phone"></span>
                   </li>
                 </ul>
               </div>
               <div class="col-md-6">
                 <ul class="list-group list-group-flush">
                   <li class="list-group-item">
-                    <strong>Name:</strong> <span id="name"></span>
+                    <strong>Name:</strong> {user.name} <span id="name"></span>
                   </li>
 
                   <li class="list-group-item">
-                    <strong>Email:</strong>  <span id="email"></span>
+                    <strong>Email:</strong> {user.email}  <span id="email"></span>
                   </li>
                 </ul>
               </div>
@@ -394,7 +404,7 @@ const LeftPane = ({
                   className="col-lg-3"
                 />
                 <div className="col-lg-6">{shipment.title}</div>
-                <div className="col-lg-2">{shipment.cost} đ</div>
+                <div className="col-lg-2">{formatMoney(shipment.cost)}</div>
               </div>
             ))}
           </div>
@@ -445,6 +455,10 @@ const RightPane = ({ products, shipmentPrice, onMakeOrderClick }) => {
     setTotalPrice(products.reduce((acc, item) => acc + item.price, 0));
   }, [products]);
 
+  const formatMoney = (money) => {
+    return money.toLocaleString('vi-VN', {style : 'currency', currency : 'VND'});
+  }
+
   return (
     <div
       className="row-gap-4 d-flex flex-column"
@@ -465,11 +479,11 @@ const RightPane = ({ products, shipmentPrice, onMakeOrderClick }) => {
       <div>
         <div className="row">
           <div className="col-lg-8">Tạm tính</div>
-          <div className="col-lg-4">{totalPrice} đ</div>
+          <div className="col-lg-4">{formatMoney(totalPrice)}</div>
         </div>
         <div className="row">
           <div className="col-lg-8">Phí vận chuyển</div>
-          <div className="col-lg-4">{shipmentPrice} đ</div>
+          <div className="col-lg-4">{formatMoney(shipmentPrice)}</div>
         </div>
       </div>
       <div style={{ width: "100%", background: "black", height: "1px" }}></div>
@@ -477,8 +491,7 @@ const RightPane = ({ products, shipmentPrice, onMakeOrderClick }) => {
         <div className="row">
           <div className="col-lg-8">Tổng cộng</div>
           <div className="col-lg-4">
-            <span>VND</span>
-            {totalPrice + shipmentPrice} đ
+            {formatMoney(totalPrice + shipmentPrice)}
           </div>
         </div>
       </div>
@@ -495,6 +508,10 @@ const RightPane = ({ products, shipmentPrice, onMakeOrderClick }) => {
 };
 
 const ProductItem = ({ item }) => {
+  const formatMoney = (money) => {
+    return money.toLocaleString('vi-VN', {style : 'currency', currency : 'VND'});
+  }
+  
   return (
     <div className="row" style={{ display: "flex", alignItems: "center" }}>
       <div className="col-lg-2">
@@ -514,7 +531,7 @@ const ProductItem = ({ item }) => {
         </div>
       </div>
       <div className="col-lg-3">
-        <div>{item.price} đ</div>
+        <div>{formatMoney(item.price)}</div>
         <div>x{item.amount}</div>
       </div>
     </div>
