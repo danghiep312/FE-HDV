@@ -30,7 +30,7 @@ export const CheckoutService = {
                 time: new Date().toISOString()
             }
         }
-        const response = await axios.post(`${AppConfig.CHECKOUT_SERVICE_URL}/checkout/checkout`, invoiceDto);
+        const response = await axios.post(`${AppConfig.HOST}/checkout/checkout`, invoiceDto);
         return response.data
     },
     getPayments: async () => {
@@ -44,7 +44,7 @@ export const CheckoutService = {
     },
     forceGetPayments: async () => {
         try {
-            const resp = await axios.get(`${AppConfig.PAYMENT_SERVICE_URL}/payment/all`)
+            const resp = await axios.get(`${AppConfig.HOST}/payment/all`)
             return resp.data
         } catch (e) {
             console.error('Error fetching payments: ', e)
@@ -62,7 +62,7 @@ export const CheckoutService = {
     },
     forceGetShipment: async () => {
         try {
-            const resp = await axios.get(`${AppConfig.SHIPMENT_SERVICE_URL}/shipment/all`)
+            const resp = await axios.get(`${AppConfig.HOST}/shipment/all`)
             return resp.data
         } catch (e) {
             console.error('Error fetching shipment: ', e)

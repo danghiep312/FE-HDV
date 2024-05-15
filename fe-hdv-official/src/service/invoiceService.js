@@ -9,7 +9,7 @@ export const InvoiceService = {
             return cache[invoiceId]
         }
         try {
-            const response = await axios.get(`${AppConfig.INVOICE_SERVICE_URL}/invoice/get-invoice`, {params: {invoiceId: invoiceId}});
+            const response = await axios.get(`${AppConfig.HOST}/invoice/get-invoice`, {params: {invoiceId: invoiceId}});
             cache[`invoice-${invoiceId}`] = response.data
             return response.data
         } catch (e) {

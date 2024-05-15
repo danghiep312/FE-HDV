@@ -1,31 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { InvoiceService } from "../service/invoiceService";
-import axios from "axios";
 import { AppConfig } from "../configs/AppConfig";
-import App from "../App";
 
 export const InvoiceDetails = () => {
   const { invoiceId } = useParams();
   const [invoice, setInvoice] = useState(null);
 
   useEffect(() => {
-    // const fetchInvoiceDetails = async () => {
-    //         // Gọi API hoặc thực hiện công việc để lấy thông tin hóa đơn dựa trên invoiceId
-    //         // Ví dụ:
-
-    //     await axios.get(`http://localhost:8003/invoice/get-invoice?invoiceId=` + invoiceId)
-    //         .then
-    //     setInvoice(data);
-    // };
-
-    // fetchInvoiceDetails();
-
-    fetch(AppConfig.INVOICE_SERVICE_URL + "/invoice/get-invoice?invoiceId=" + invoiceId)
+    fetch(AppConfig.HOST + "/invoice/get-invoice?invoiceId=" + invoiceId)
       .then((response) => response.json())
       .then((data) => {
         setInvoice(data);
-        console.log(data);
       });
   }, [invoiceId]);
 
@@ -33,62 +18,82 @@ export const InvoiceDetails = () => {
     return <div>Loading...</div>;
   }
 
+  const formatMoney = (money) => {
+    return money.toLocaleString('vi-VN', {style : 'currency', currency : 'VND'});
+  }
+
   return (
-    <div className="container">
+    <div className="container mt-4">
       <h2>Invoice Details</h2>
-      <div>
-        <h4>Customer:</h4>
-        <ul>
-          <li>Name: {invoice.customer.name}</li>
-          <li>Phone: {invoice.customer.phone}</li>
-        </ul>
-        <h4>Payment Details:</h4>
-        <ul>
-          <li>Payment Method: {invoice.payment.paymentMethod}</li>
-        </ul>
-        <h4>Shipment Details:</h4>
-        <ul>
-          <li>Shipment Name: {invoice.shipment.shipmentName}</li>
-          <li>Shipment Cost: {invoice.shipment.shipmentCost} VND</li>
-        </ul>
-        <h4>Time: {new Date(invoice.time).toLocaleString()}</h4>
-
-        <h4>Products:</h4>
-        <ul>
-          {invoice.products.map((product) => {
-            const quantity =
-              invoice.invoiceProducts.find(
-                (item) => item.id.productId === product.productId
-              )?.amount || 0;
-            return (
-              <li key={product.productId}>
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <div>
-                    <img
-                      src={product.imageUrl}
-                      alt={product.name}
-                      style={{ width: "100px", height: "auto" }}
-                    />
-                  </div>
-                  <div style={{ marginLeft: "10px" }}>
-                    <p>
-                      <strong>Name:</strong> {product.name}
-                    </p>
-                    <p>
-                      <strong>Price:</strong> {product.price} VND
-                    </p>
-                    <p>
-                      <strong>Quantity:</strong> {quantity}
-                    </p>
-                  </div>
-                </div>
+      <div className="row">
+        <div className="col-md-6">
+          <div>
+            <h4>Customer:</h4>
+            <ul className="list-group">
+              <li className="list-group-item">
+                <strong>Name:</strong> {invoice.customer.name}
               </li>
-            );
-          })}
-        </ul>
-
-        <h4>Total Amount: {invoice.totalAmount}</h4>
-        <h4>Total Price: {invoice.totalPrice} VND</h4>
+              <li className="list-group-item">
+                <strong>Phone:</strong> {invoice.customer.phone}
+              </li>
+            </ul>
+            <h4 className="mt-4">Payment Details:</h4>
+            <ul className="list-group">
+              <li className="list-group-item">
+                <strong>Payment Method:</strong> {invoice.payment.paymentMethod}
+              </li>
+            </ul>
+            <h4 className="mt-4">Shipment Details:</h4>
+            <ul className="list-group">
+              <li className="list-group-item">
+                <strong>Shipment Name:</strong> {invoice.shipment.shipmentName}
+              </li>
+              <li className="list-group-item">
+                <strong>Shipment Cost:</strong> {formatMoney(invoice.shipment.shipmentCost)}
+              </li>
+            </ul>
+            <h4 className="mt-4">Time: {new Date(invoice.time).toLocaleString()}</h4>
+          </div>
+        </div>
+        <div className="col-md-6">
+          <h4 className="mt-4">Products:</h4>
+          <ul className="list-group">
+            {invoice.products.map((product) => {
+              const quantity =
+                invoice.invoiceProducts.find(
+                  (item) => item.id.productId === product.productId
+                )?.amount || 0;
+              return (
+                <li key={product.productId} className="list-group-item">
+                  <div className="d-flex align-items-center">
+                    <div>
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        style={{ width: "100px", height: "auto" }}
+                      />
+                    </div>
+                    <div style={{ marginLeft: "10px" }}>
+                      <p>
+                        <strong>Name:</strong> {product.name}
+                      </p>
+                      <p>
+                        <strong>Price:</strong> {formatMoney(product.price)}
+                      </p>
+                      <p>
+                        <strong>Quantity:</strong> {quantity}
+                      </p>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="mt-4">
+            <h4>Total Amount: {invoice.totalAmount}</h4>
+            <h4>Total Price: {formatMoney(invoice.totalPrice)} </h4>
+          </div>
+        </div>
       </div>
     </div>
   );

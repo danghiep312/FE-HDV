@@ -9,7 +9,7 @@ export const CartService = {
         if (cache['cart']) {
             return cache['cart']
         }
-        const resp = await axios.get(`${AppConfig.CART_SERVICE_URL}/cart/get`,
+        const resp = await axios.get(`${AppConfig.HOST}/cart/get`,
             { params: {customerId: UserService.getUserId}});
 
         cache['cart'] = resp.data;

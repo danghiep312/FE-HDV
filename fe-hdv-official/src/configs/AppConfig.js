@@ -6,4 +6,5 @@ export const AppConfig = {
     CHECKOUT_SERVICE_URL: 'http://localhost:8888',
     INVOICE_SERVICE_URL: 'http://localhost:8888',
     CART_SERVICE_URL: 'http://localhost:8888',
+    HOST: 'http://localhost:8888',
 }

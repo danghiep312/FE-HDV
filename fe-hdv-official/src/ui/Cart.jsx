@@ -40,6 +40,17 @@ const Cart = () => {
     fetchProducts();
   }, []);
 
+  const getTotalProductPrice = () => {
+    var result = 0;
+    products.forEach((product) => {
+      result += product.price * product.amount;
+    });
+    return result;
+  }
+
+  const getTotalPrice = () => {
+    return getTotalProductPrice() + selectedShipment["shipmentCost"];
+  }
   
 
   const handleMakeOrderClick = () => {
@@ -59,26 +70,31 @@ const Cart = () => {
       }
     };
     const checkout = async () => {
+      console.log("asdf " + getTotalPrice())
       try {
+        
         let invoice;
         const checkoutPromise = CheckoutService.checkout(
           await UserService.getUser(),
           selectedPayment,
           selectedShipment,
           products,
-          100,
+          getTotalPrice(),
           address.current
         ).then((resp) => (invoice = resp));
         await Promise.all([checkoutPromise, displayMakeOrderProgress()]);
         toast("Success", `Invoice created`, true);
+        console.log("Success" + invoice)
         await wait(1500);
         // router.navigate(`/order/${invoice["invoiceId"]}`);
       } catch (e) {
         const upToDateProducts = e.response.data;
+        console.log("Faile sadfasdf " + upToDateProducts)
         toast(`Lỗi: Mặt hàng hiện không đủ số lượng`, "Chuẩn bị cập nhật...");
         await wait(1500);
         updateCartProductAmount(upToDateProducts);
         toast(`Lỗi: Mặt hàng hiện không đủ số lượng`, "Cập nhật xong!");
+        setShowCheckoutStatusDialog(false);
       }
     };
     checkout();
