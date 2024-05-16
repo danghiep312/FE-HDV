@@ -8,6 +8,6 @@ export const AppConfig = {
     // CART_SERVICE_URL: 'http://localhost:8888',
     // HOST: 'http://103.95.197.219:8888'
     HOST: 'http://localhost:8888',
-    STATUS_HOST: 'http://localhost:8007',
+    STATUS_HOST: 'http://localhost:8007/checkout',
     // STATUS_HOST: 'http://103.95.197.219:8007'
 }

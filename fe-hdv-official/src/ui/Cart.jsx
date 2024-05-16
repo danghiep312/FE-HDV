@@ -88,12 +88,24 @@ const Cart = () => {
         await wait(1500);
         // router.navigate(`/order/${invoice["invoiceId"]}`);
       } catch (e) {
-        const upToDateProducts = e.response.data;
-        console.log("Faile sadfasdf " + upToDateProducts)
-        toast(`Lỗi: Mặt hàng hiện không đủ số lượng`, "Chuẩn bị cập nhật...");
-        await wait(1500);
-        updateCartProductAmount(upToDateProducts);
-        toast(`Lỗi: Mặt hàng hiện không đủ số lượng`, "Cập nhật xong!");
+        const failCode = e.response.status;
+        console.log("Failed  " + failCode)
+        if (failCode === 470) {
+          const upToDateProducts = e.response.data;
+          toast(`Lỗi: Mặt hàng hiện không đủ số lượng`, "Chuẩn bị cập nhật...");
+          await wait(1500);
+          updateCartProductAmount(upToDateProducts);
+          toast(`Lỗi: Mặt hàng hiện không đủ số lượng`, "Cập nhật xong!");
+        }
+        else if (failCode === 471) {
+          toast(`Xác thực phương thức thanh toán thất bại`);
+        }
+        else if (failCode === 472) {
+          toast(`Xác thực phương thức vận chuyển thất bại`);
+        }
+        else {
+          toast("Lỗi: tạo hóa đơn không thành công");
+        }
         setShowCheckoutStatusDialog(false);
       }
     };
